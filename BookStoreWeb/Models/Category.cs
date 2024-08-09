@@ -14,7 +14,7 @@ namespace BookStoreWeb.Models
         public string? Name { get; set; }
 
         [DisplayName("Display Order")]
-        [Range(1, 100, ErrorMessage = "Display Order Must between 1-100")]
+        [Range(1,100,ErrorMessage ="Display Order Must Between 0-100")]
         public int? DisplayOrder { get; set; }
     }
 }
