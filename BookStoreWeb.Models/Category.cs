@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BookStoreWeb.Models.Models
 {
@@ -16,5 +17,6 @@ namespace BookStoreWeb.Models.Models
         [DisplayName("Display Order")]
         [Range(1,100,ErrorMessage ="Display Order Must Between 0-100")]
         public int? DisplayOrder { get; set; }
+       
     }
 }
