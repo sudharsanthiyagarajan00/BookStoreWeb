@@ -22,7 +22,7 @@ namespace BookStoreWeb.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            List<Product> objProductList = _unitOfWork.Product.GetAll().ToList();
+            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
             
             return View(objProductList);
         }
@@ -62,7 +62,20 @@ namespace BookStoreWeb.Areas.Admin.Controllers
                 if(file !=null)
                 {
                     string fileName=Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    string productPath=Path.Combine(wwwRootPath, @"images\product");
+                    string productPath = Path.Combine(wwwRootPath, @"images\product");
+
+                    if (!string.IsNullOrEmpty(productVm.Product.ImageUrl))
+                    {
+                        //delete the old URL
+                        var oldImagePath = Path.Combine(wwwRootPath
+                            , productVm.Product.ImageUrl.TrimStart('\\'));
+
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                        
+                    }
 
                     using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
                     {
@@ -72,9 +85,19 @@ namespace BookStoreWeb.Areas.Admin.Controllers
                     productVm.Product.ImageUrl = @"\images\product" + fileName;
                 }
 
-                _unitOfWork.Product.Add(productVm.Product);
+                if (productVm.Product.Id==0)
+                {
+                    _unitOfWork.Product.Add(productVm.Product);
+
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(productVm.Product);
+
+                }
+
                 _unitOfWork.Save();
-                TempData["success"] = "Product Created Successfully";
+                TempData["success"] = "Product Updated Successfully";
                 return RedirectToAction("Index");
 
             }
@@ -123,8 +146,6 @@ namespace BookStoreWeb.Areas.Admin.Controllers
 
 
         }
-
-
 
     }
 }
