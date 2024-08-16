@@ -15,6 +15,11 @@ namespace BookStoreWeb.Models
         public string? State { get; set; }
         public string? PostalCode { get; set; }
 
+        public int? CompanyId { get; set; }
+        [ForeignKey("CompanyId")]
+        [ValidateNever]
+        public Company company { get; set; }
+
         [NotMapped]
         public string Role { get; set; }
 
