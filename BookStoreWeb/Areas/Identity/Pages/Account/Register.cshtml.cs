@@ -145,7 +145,12 @@ namespace BookStoreWeb.Areas.Identity.Pages.Account
                     Text = i,
                     Value = i
                 }),
-                
+                CompanyList = _unitOfWork.Company.GetAll().Select(i => new SelectListItem
+                {
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+                })
+
             };
 
             ReturnUrl = returnUrl;
@@ -169,7 +174,10 @@ namespace BookStoreWeb.Areas.Identity.Pages.Account
                 user.PostalCode = Input.PostalCode;
                 user.PhoneNumber = Input.PhoneNumber;
 
-               
+                if (Input.Role == SD.Role_Company)
+                {
+                    user.CompanyId = Input.CompanyId;
+                }
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
