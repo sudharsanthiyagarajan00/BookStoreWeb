@@ -15,6 +15,7 @@ namespace BookStoreWeb.DataAccess.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Company> Companies { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
         //public object GetAll()
@@ -31,6 +32,36 @@ namespace BookStoreWeb.DataAccess.Data
                 new Category { Id=2,Name="SicFI",DisplayOrder=2},
                 new Category { Id=3,Name="LifeLessons",DisplayOrder=3}
                 );
+
+            modelBuilder.Entity<Company>().HasData(
+                new Company {
+                Id=1,
+                Name="Info Tech",
+                StreetAddress="Omr Road",
+                City="Chennai",
+                State="Tamilnadu",
+                PostalCode="60015",
+                PhoneNumber="1234567890"},
+                new Company {
+                    Id=2,
+                    Name = "Hybrid Soln",
+                    StreetAddress = "ECR Road",
+                    City = "Hyderabad",
+                    State = "Telugana",
+                    PostalCode = "70015",
+                    PhoneNumber = "6789356289"
+                },
+                new Company {
+                    Id=3,
+                    Name = "RTO Mand Tech",
+                    StreetAddress = "Park Road",
+                    City = "Bangalore",
+                    State = "Karnataka",
+                    PostalCode = "90015",
+                    PhoneNumber = "9876234560"
+                }
+                );
+
             modelBuilder.Entity<Product>().HasData(
                 new Product
                 {
