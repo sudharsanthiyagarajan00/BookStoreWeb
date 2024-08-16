@@ -3,12 +3,16 @@ using BookStoreWeb.DataAccess.Repository.IRepository;
 using BookStoreWeb.Models;
 using BookStoreWeb.Models.Models;
 using BookStoreWeb.Models.ViewModel;
+using BookStoreWeb.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BookStoreWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
+
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -22,8 +26,8 @@ namespace BookStoreWeb.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
-            
+            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties: "Category").ToList();
+
             return View(objProductList);
         }
 
@@ -41,7 +45,7 @@ namespace BookStoreWeb.Areas.Admin.Controllers
                 Product = new Product()
 
             };
-            if(id==null || id==0)
+            if (id == null || id == 0)
             {
                 return View(productVM);
             }
@@ -54,98 +58,112 @@ namespace BookStoreWeb.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Upsert(ProductVM productVm, IFormFile? file)
+
+        public IActionResult Upsert(ProductVM productVM, IFormFile? file)
+
         {
             if (ModelState.IsValid)
-            {
-                string wwwRootPath = _webHostEnvironment.WebRootPath;
-                if(file !=null)
-                {
-                    string fileName=Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    string productPath = Path.Combine(wwwRootPath, @"images\product");
 
-                    if (!string.IsNullOrEmpty(productVm.Product.ImageUrl))
+            {
+                string wwwRootPath = _webHostEnvironment.WebRootPath;// this is will give WWWRootPath loaction
+                if (file != null)
+
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string productPath = Path.Combine(wwwRootPath, @"images/product");
+                    if (!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+
                     {
-                        //delete the old URL
-                        var oldImagePath = Path.Combine(wwwRootPath
-                            , productVm.Product.ImageUrl.TrimStart('\\'));
+                        //delete the old image
+
+                        var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
 
                         if (System.IO.File.Exists(oldImagePath))
-                        {
-                            System.IO.File.Delete(oldImagePath);
-                        }
-                        
-                    }
 
+                        {
+
+                            System.IO.File.Delete(oldImagePath);
+
+                        }
+                    }
+                    //Saving img
                     using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+
                     {
                         file.CopyTo(fileStream);
                     }
 
-                    productVm.Product.ImageUrl = @"\images\product" + fileName;
+                    productVM.Product.ImageUrl = @"images\product\" + fileName;
                 }
-
-                if (productVm.Product.Id==0)
+                if (productVM.Product.Id == 0)
                 {
-                    _unitOfWork.Product.Add(productVm.Product);
-
+                    _unitOfWork.Product.Add(productVM.Product);
                 }
                 else
+
                 {
-                    _unitOfWork.Product.Update(productVm.Product);
-
+                    _unitOfWork.Product.Update(productVM.Product);
                 }
-
                 _unitOfWork.Save();
-                TempData["success"] = "Product Updated Successfully";
+                TempData["Success"] = "Category Created successfully";
                 return RedirectToAction("Index");
 
             }
-            else
+            //else
             {
-                productVm.CategoryList = _unitOfWork.Category
+                productVM.CategoryList = _unitOfWork.Category
                .GetAll().Select(u => new SelectListItem
                {
                    Text = u.Name,
                    Value = u.Id.ToString()
                });
-               
-               return View(productVm);
+
+                return View(productVM);
             }
 
         }
+    
 
+        #region API CALLS
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties: "Category").ToList();
+            return Json(new { data = objProductList });
+        }
+
+        [HttpDelete]
         public IActionResult Delete(int? id)
         {
-            if (id == null || id == 0)
+            var productToBeDeleted = _unitOfWork.Product.Get(u => u.Id == id);
+            if (productToBeDeleted == null)
             {
-                return NotFound();
-
+                return Json(new { success = false, message = "Error while deleting" });
             }
-            Product? productFromDb = _unitOfWork.Product.Get(u => u.Id == id);
 
-            if (productFromDb == null)
+            string productPath = @"images\products\product-" + id;
+            string finalPath = Path.Combine(_webHostEnvironment.WebRootPath, productPath);
+
+            if (Directory.Exists(finalPath))
             {
-                return NotFound();
-            }
-            return View(productFromDb);
-        }
+                string[] filePaths = Directory.GetFiles(finalPath);
+                foreach (string filePath in filePaths)
+                {
+                    System.IO.File.Delete(filePath);
+                }
 
-        [HttpPost, ActionName("Delete")]
-        public IActionResult DeletePost(int? id)
-        {
-            Product? obj = _unitOfWork.Product.Get(u => u.Id == id);
-            if (obj == null)
-            {
-                return NotFound();
+                Directory.Delete(finalPath);
             }
-            _unitOfWork.Product.Remove(obj);
+
+
+            _unitOfWork.Product.Remove(productToBeDeleted);
             _unitOfWork.Save();
-            TempData["success"] = "Product Deleted Successfully";
-            return RedirectToAction("Index");
 
-
+            return Json(new { success = true, message = "Delete Successful" });
         }
+
+        #endregion
 
     }
 }
