@@ -121,42 +121,7 @@ namespace BookStoreWeb.Areas.Customer.Controllers
             }
 			if (applicationUser.CompanyId.GetValueOrDefault() == 0)
 			{
-				//https://localhost:7279/
-				//var domain = "https://localhost:7279/";
-				//            var options = new SessionCreateOptions
-				//            {
-				//                SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-				//                CancelUrl = domain + "customer/cart/index",
-				//                LineItems = new List<SessionLineItemOptions>(),
-				//                Mode = "payment",
-				//            };
-
-				//foreach (var item in ShoppingCartVM.ShoppingCartList)
-				//{
-				//	var sessionLineItem = new SessionLineItemOptions
-				//	{
-				//		PriceData = new SessionLineItemPriceDataOptions
-				//		{
-				//			UnitAmount = (long)(item.Price * 100), // $20.50 => 2050
-				//			Currency = "usd",
-				//			ProductData = new SessionLineItemPriceDataProductDataOptions
-				//			{
-				//				Name = item.Product.Title
-				//			}
-				//		},
-				//		Quantity = item.Count
-				//	};
-				//	options.LineItems.Add(sessionLineItem);
-				//}
-
-				//var service = new SessionService();
-				//Session session = service.Create(options);
-				//_unitOfWork.OrderHeader.UpdateStripePaymentId(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
-				//_unitOfWork.Save();
-				//Response.Headers.Add("Location", session.Url);
-				//return new StatusCodeResult(303);
-
-				var domain = Request.Scheme + "://" + Request.Host.Value + "/";
+                var domain = Request.Scheme + "://" + Request.Host.Value + "/";
 				var options = new SessionCreateOptions
 				{
 					SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
