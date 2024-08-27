@@ -1,15 +1,17 @@
 using BookStoreWeb.DataAccess.Data;
+using BookStoreWeb.DataAccess.DbInitializer;
 using BookStoreWeb.DataAccess.Repository;
 using BookStoreWeb.DataAccess.Repository.IRepository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using BookStoreWeb.Utility;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 builder.Services.AddControllersWithViews();
 
 //Setup Application DbContext
@@ -34,6 +36,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddScoped<IDbInitializer,DbInitializer>();
+
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
@@ -43,10 +47,13 @@ builder.Services.AddScoped<IEmailSender,EmailSender>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
     app.UseHsts();
 }
 
@@ -64,6 +71,8 @@ app.UseAuthorization();
 
 app.UseSession();
 
+SeedDataBase();
+
 app.MapRazorPages();
 
 app.MapControllerRoute(
@@ -71,3 +80,12 @@ app.MapControllerRoute(
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+void SeedDataBase()
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        dbInitializer.Initialize();
+    }
+}
